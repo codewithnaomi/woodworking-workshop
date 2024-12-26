@@ -7,6 +7,7 @@ use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemor
 use ic_stable_structures::{BoundedStorable, Cell, DefaultMemoryImpl, StableBTreeMap, Storable};
 use std::{borrow::Cow, cell::RefCell};
 
+// Type aliases for memory
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 type IdCell = Cell<u64, Memory>;
 
@@ -237,11 +238,21 @@ thread_local! {
 
 // Functions
 
-// Create Workshop
+fn is_email_valid(email: &str) -> bool {
+    email.contains('@') && email.contains('.')
+}
+
 #[ic_cdk::update]
 fn create_workshop(payload: CreateWorkshopPayload) -> Result<Workshop, Message> {
-    if payload.name.is_empty() || payload.contact.is_empty() || payload.email.is_empty() {
-        return Err(Message::InvalidPayload("Missing required fields".to_string()));
+    if payload.name.trim().is_empty()
+        || payload.contact.trim().is_empty()
+        || payload.email.trim().is_empty()
+    {
+        return Err(Message::InvalidPayload("Required fields are missing.".to_string()));
+    }
+
+    if !is_email_valid(&payload.email) {
+        return Err(Message::InvalidPayload("Invalid email address.".to_string()));
     }
 
     let workshop_id = ID_COUNTER
@@ -249,7 +260,7 @@ fn create_workshop(payload: CreateWorkshopPayload) -> Result<Workshop, Message> 
             let current_value = *counter.borrow().get();
             counter.borrow_mut().set(current_value + 1)
         })
-        .expect("Counter increment failed");
+        .expect("ID counter increment failed");
 
     let workshop = Workshop {
         id: workshop_id,
@@ -266,6 +277,38 @@ fn create_workshop(payload: CreateWorkshopPayload) -> Result<Workshop, Message> 
     });
 
     Ok(workshop)
+}
+
+#[ic_cdk::update]
+fn delete_workshop(workshop_id: u64) -> Result<Message, Message> {
+    let removed = WORKSHOPS.with(|workshops| workshops.borrow_mut().remove(&workshop_id));
+
+    match removed {
+        Some(_) => Ok(Message::Success("Workshop deleted successfully.".to_string())),
+        None => Err(Message::NotFound("Workshop not found.".to_string())),
+    }
+}
+
+#[ic_cdk::update]
+fn list_workshops() -> Result<Vec<Workshop>, Message> {
+    let workshops = WORKSHOPS.with(|map| {
+        map.borrow()
+            .iter()
+            .map(|(_, workshop)| workshop.clone())
+            .collect::<Vec<_>>()
+    });
+
+    Ok(workshops)
+}
+
+#[ic_cdk::query]
+fn get_workshop_by_id(workshop_id: u64) -> Result<Workshop, Message> {
+    let workshop = WORKSHOPS.with(|workshops| workshops.borrow().get(&workshop_id));
+
+    match workshop {
+        Some(w) => Ok(w),
+        None => Err(Message::NotFound("Workshop not found.".to_string())),
+    }
 }
 
 // Create Project
@@ -372,6 +415,33 @@ fn record_expense(payload: RecordExpensePayload) -> Result<Expense, Message> {
     });
 
     Ok(expense)
+}
+
+#[ic_cdk::update]
+fn update_workshop_details(workshop_id: u64, updated_name: Option<String>, updated_location: Option<String>) -> Result<Message, Message> {
+    WORKSHOPS.with(|workshops| {
+        let mut map = workshops.borrow_mut();
+        if let Some(mut workshop) = map.remove(&workshop_id) {
+            if let Some(name) = updated_name {
+                if !name.trim().is_empty() {
+                    workshop.name = name;
+                }
+            }
+            if let Some(location) = updated_location {
+                if !location.trim().is_empty() {
+                    workshop.location = location;
+                }
+            }
+            map.insert(workshop_id, workshop);
+            return Ok(Message::Success("Workshop details updated successfully.".to_string()));
+        }
+        Err(Message::NotFound("Workshop not found.".to_string()))
+    })
+}
+
+#[ic_cdk::query]
+fn count_workshops() -> usize {
+    WORKSHOPS.with(|workshops| workshops.borrow().len().try_into().unwrap())
 }
 
 // Update Inventory
