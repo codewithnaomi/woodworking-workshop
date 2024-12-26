@@ -1,206 +1,102 @@
-type Appointment = record {
-  id : nat64;
-  status : text;
-  patient_id : nat64;
-  appointment_time : nat64;
-  video_link : opt text;
-  doctor_id : nat64;
-  reason : text;
-};
-type Chat = record {
-  id : nat64;
-  patient_id : nat64;
-  message : text;
-  timestamp : nat64;
-  doctor_id : nat64;
-};
-type Consultation = record {
-  id : nat64;
-  department_id : nat64;
-  patient_id : nat64;
-  problem : text;
-};
-type CreateAppointmentPayload = record {
-  patient_id : nat64;
-  appointment_time : nat64;
-  doctor_id : nat64;
-  reason : text;
-};
-type CreateChatPayload = record {
-  patient_id : nat64;
-  message : text;
-  timestamp : nat64;
-  doctor_id : nat64;
-};
-type CreateConsultationPayload = record {
-  department_id : nat64;
-  patient_id : nat64;
-  problem : text;
-};
-type CreateDepartmentPayload = record { name : text; description : text };
-type CreateDoctorPayload = record {
-  department_id : nat64;
+type AddEmployeePayload = record {
   name : text;
-  image : text;
+  role : text;
+  hourly_rate : float64;
+  workshop_id : nat64;
 };
-type CreateMedicalRecordPayload = record {
-  patient_id : nat64;
-  treatment : text;
-  diagnosis : text;
-  lab_results : vec text;
-  doctor_id : nat64;
-  prescriptions : vec Prescription;
-};
-type CreatePatientPayload = record {
-  age : nat64;
-  name : text;
-  current_medications : vec text;
-  email : text;
-  address : text;
-  gender : text;
-  emergency_contact : EmergencyContact;
-  medical_history : vec text;
-  phone_number : text;
-  allergies : vec text;
-};
-type CreatePaymentPayload = record {
-  patient_id : nat64;
-  appointment_id : nat64;
-  payment_method : text;
-  amount : nat64;
-};
-type CreatePrescriptionPayload = record {
-  patient_id : nat64;
-  instructions : text;
-  medications : vec text;
-  doctor_id : nat64;
-};
-type Department = record {
-  id : nat64;
+type CreateProjectPayload = record {
+  cost_estimate : float64;
   name : text;
   description : text;
-  created_at : nat64;
+  deadline : nat64;
+  workshop_id : nat64;
 };
-type Doctor = record {
-  id : nat64;
-  department_id : nat64;
+type CreateWorkshopPayload = record {
+  contact : text;
+  owner : text;
   name : text;
-  is_available : bool;
-  image : text;
+  email : text;
+  location : text;
 };
-type EmergencyContact = record {
-  relationship : text;
-  name : text;
-  phone_number : text;
-};
-type MedicalRecord = record {
+type Employee = record {
   id : nat64;
-  patient_id : nat64;
-  treatment : text;
-  created_at : nat64;
-  diagnosis : text;
-  lab_results : vec text;
-  doctor_id : nat64;
-  prescriptions : vec Prescription;
+  name : text;
+  role : text;
+  hourly_rate : float64;
+  workshop_id : nat64;
+  is_active : bool;
+};
+type Expense = record {
+  id : nat64;
+  date : nat64;
+  description : text;
+  workshop_id : nat64;
+  category : text;
+  amount : float64;
+};
+type Inventory = record {
+  id : nat64;
+  item_name : text;
+  workshop_id : nat64;
+  unit_price : float64;
+  quantity : nat64;
+  restock_date : nat64;
 };
 type Message = variant {
   Error : text;
-  PaymentFailed : text;
   InvalidPayload : text;
   NotFound : text;
   Success : text;
-  PaymentCompleted : text;
 };
-type Patient = record {
-  id : nat64;
-  age : nat64;
-  name : text;
-  current_medications : vec text;
-  email : text;
-  address : text;
-  gender : text;
-  emergency_contact : EmergencyContact;
-  medical_history : vec text;
-  phone_number : text;
-  allergies : vec text;
-};
-type Payment = record {
+type Project = record {
   id : nat64;
   status : text;
-  patient_id : nat64;
-  appointment_id : nat64;
-  payment_method : text;
-  amount : nat64;
+  cost_estimate : float64;
+  name : text;
+  description : text;
+  deadline : nat64;
+  workshop_id : nat64;
 };
-type Prescription = record {
+type RecordExpensePayload = record {
+  description : text;
+  workshop_id : nat64;
+  category : text;
+  amount : float64;
+};
+type Result = variant { Ok : Employee; Err : Message };
+type Result_1 = variant { Ok : float64; Err : Message };
+type Result_2 = variant { Ok : Project; Err : Message };
+type Result_3 = variant { Ok : Workshop; Err : Message };
+type Result_4 = variant { Ok : Message; Err : Message };
+type Result_5 = variant { Ok : vec Workshop; Err : Message };
+type Result_6 = variant { Ok : Expense; Err : Message };
+type Result_7 = variant { Ok : Inventory; Err : Message };
+type UpdateInventoryPayload = record {
+  item_name : text;
+  workshop_id : nat64;
+  unit_price : float64;
+  quantity : nat64;
+};
+type Workshop = record {
   id : nat64;
-  patient_id : nat64;
-  issued_at : nat64;
-  instructions : text;
-  medications : vec text;
-  doctor_id : nat64;
+  contact : text;
+  owner : text;
+  name : text;
+  created_at : nat64;
+  email : text;
+  location : text;
 };
-type Result = variant { Ok : Appointment; Err : Message };
-type Result_1 = variant { Ok : Chat; Err : Message };
-type Result_10 = variant { Ok : vec Chat; Err : Message };
-type Result_11 = variant { Ok : vec Consultation; Err : Message };
-type Result_12 = variant { Ok : vec Department; Err : Message };
-type Result_13 = variant { Ok : vec Doctor; Err : Message };
-type Result_14 = variant { Ok : vec MedicalRecord; Err : Message };
-type Result_15 = variant { Ok : vec Patient; Err : Message };
-type Result_16 = variant { Ok : vec Payment; Err : Message };
-type Result_17 = variant { Ok : vec Prescription; Err : Message };
-type Result_2 = variant { Ok : Consultation; Err : Message };
-type Result_3 = variant { Ok : Department; Err : Message };
-type Result_4 = variant { Ok : Doctor; Err : Message };
-type Result_5 = variant { Ok : MedicalRecord; Err : Message };
-type Result_6 = variant { Ok : Patient; Err : Message };
-type Result_7 = variant { Ok : Payment; Err : Message };
-type Result_8 = variant { Ok : Prescription; Err : Message };
-type Result_9 = variant { Ok : vec Appointment; Err : Message };
 service : {
-  create_appointment : (CreateAppointmentPayload) -> (Result);
-  create_chat : (CreateChatPayload) -> (Result_1);
-  create_consultation : (CreateConsultationPayload) -> (Result_2);
-  create_department : (CreateDepartmentPayload) -> (Result_3);
-  create_doctor : (CreateDoctorPayload) -> (Result_4);
-  create_medical_record : (CreateMedicalRecordPayload) -> (Result_5);
-  create_patient : (CreatePatientPayload) -> (Result_6);
-  create_payment : (CreatePaymentPayload) -> (Result_7);
-  create_prescription : (CreatePrescriptionPayload) -> (Result_8);
-  get_all_appointments : () -> (Result_9) query;
-  get_all_chats : () -> (Result_10) query;
-  get_all_consultations : () -> (Result_11) query;
-  get_all_departments : () -> (Result_12) query;
-  get_all_doctors : () -> (Result_13) query;
-  get_all_medical_records : () -> (Result_14) query;
-  get_all_patients : () -> (Result_15) query;
-  get_all_payments : () -> (Result_16) query;
-  get_all_prescriptions : () -> (Result_17) query;
-  get_appointment_by_id : (nat64) -> (Result) query;
-  get_appointments_by_doctor_id : (nat64) -> (Result_9) query;
-  get_appointments_by_patient_id : (nat64) -> (Result_9) query;
-  get_chat_by_id : (nat64) -> (Result_1) query;
-  get_chats_by_doctor_id : (nat64) -> (Result_10) query;
-  get_chats_by_patient_id : (nat64) -> (Result_10) query;
-  get_consultation_by_id : (nat64) -> (Result_2) query;
-  get_consultations_by_patient_id : (nat64) -> (Result_11) query;
-  get_department_by_id : (nat64) -> (Result_3) query;
-  get_doctor_by_id : (nat64) -> (Result_4) query;
-  get_doctors_by_department_id : (nat64) -> (Result_13) query;
-  get_medical_record_by_id : (nat64) -> (Result_5) query;
-  get_medical_records_by_doctor_id : (nat64) -> (Result_14) query;
-  get_medical_records_by_patient_id : (nat64) -> (Result_14) query;
-  get_patient_by_id : (nat64) -> (Result_6) query;
-  get_payment_by_id : (nat64) -> (Result_7) query;
-  get_payments_by_appointment_id : (nat64) -> (Result_16) query;
-  get_payments_by_patient_id : (nat64) -> (Result_16) query;
-  get_prescription_by_id : (nat64) -> (Result_8) query;
-  get_prescriptions_by_doctor_id : (nat64) -> (Result_17) query;
-  get_prescriptions_by_patient_id : (nat64) -> (Result_17) query;
-  search_departments_by_name : (text) -> (Result_12) query;
-  search_doctors_by_name : (text) -> (Result_13) query;
-  update_appointment_status : (nat64, text) -> (Result);
-  update_appointment_video_link : (nat64, text) -> (Result);
-  update_doctor_availability : (nat64, bool) -> (Result_4);
+  add_employee : (AddEmployeePayload) -> (Result);
+  calculate_inventory_value : (nat64) -> (Result_1) query;
+  calculate_total_expenses : (nat64) -> (Result_1) query;
+  count_workshops : () -> (nat64) query;
+  create_project : (CreateProjectPayload) -> (Result_2);
+  create_workshop : (CreateWorkshopPayload) -> (Result_3);
+  delete_workshop : (nat64) -> (Result_4);
+  get_workshop_by_id : (nat64) -> (Result_3) query;
+  list_workshops : () -> (Result_5);
+  record_expense : (RecordExpensePayload) -> (Result_6);
+  update_inventory : (UpdateInventoryPayload) -> (Result_7);
+  update_workshop_details : (nat64, opt text, opt text) -> (Result_4);
 }
